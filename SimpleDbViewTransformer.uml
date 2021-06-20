@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.asiainfo.cem.sql.SimpleDbViewTransformer</OriginalElement>
+  <nodes>
+    <node x="560.3802083333333" y="221.0">com.asiainfo.cem.sql.DbViewTransformer</node>
+    <node x="951.0" y="740.0">com.asiainfo.cem.sql.SourceTransformer</node>
+    <node x="1333.0" y="740.0">com.asiainfo.cem.sql.DbViewTransformerCompositor</node>
+    <node x="85.54166666666663" y="0.0">com.asiainfo.cem.sql.DbSchema</node>
+    <node x="0.0" y="515.0">com.asiainfo.cem.sql.SimpleDbViewTransformer</node>
+    <node x="500.99999999999994" y="740.0">com.asiainfo.cem.sql.DbJoinViewTransformer</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.asiainfo.cem.sql.SimpleDbViewTransformer" target="com.asiainfo.cem.sql.DbViewTransformer">
+      <point x="180.375" y="-271.0" />
+      <point x="420.875" y="495.0" />
+      <point x="668.9802083333333" y="495.0" />
+      <point x="-72.39999999999998" y="122.0" />
+    </edge>
+    <edge source="com.asiainfo.cem.sql.DbJoinViewTransformer" target="com.asiainfo.cem.sql.DbViewTransformer">
+      <point x="0.0" y="-46.0" />
+      <point x="716.0" y="495.0" />
+      <point x="741.3802083333333" y="495.0" />
+      <point x="0.0" y="122.0" />
+    </edge>
+    <edge source="com.asiainfo.cem.sql.DbViewTransformerCompositor" target="com.asiainfo.cem.sql.DbViewTransformer">
+      <point x="0.0" y="-46.0" />
+      <point x="1599.0" y="485.0" />
+      <point x="886.1802083333333" y="485.0" />
+      <point x="144.80000000000007" y="122.0" />
+    </edge>
+    <edge source="com.asiainfo.cem.sql.SourceTransformer" target="com.asiainfo.cem.sql.DbViewTransformer">
+      <point x="0.0" y="-46.0" />
+      <point x="1132.0" y="495.0" />
+      <point x="813.7802083333332" y="495.0" />
+      <point x="72.39999999999998" y="122.0" />
+    </edge>
+    <edge source="com.asiainfo.cem.sql.SimpleDbViewTransformer" target="com.asiainfo.cem.sql.DbSchema">
+      <point x="-180.375" y="-271.0" />
+      <point x="60.125" y="495.0" />
+      <point x="135.23437499999994" y="495.0" />
+      <point x="135.23437499999994" y="196.0" />
+      <point x="130.20833333333331" y="196.0" />
+      <point x="-89.33333333333331" y="85.5" />
+    </edge>
+    <edge source="com.asiainfo.cem.sql.DbViewTransformer" target="com.asiainfo.cem.sql.DbSchema">
+      <point x="0.0" y="-122.0" />
+      <point x="741.3802083333333" y="196.0" />
+      <point x="308.87499999999994" y="196.0" />
+      <point x="89.33333333333331" y="85.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="776.5" y="376.5" />
+  <SelectedNodes>
+    <node>com.asiainfo.cem.sql.DbViewTransformerCompositor</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
