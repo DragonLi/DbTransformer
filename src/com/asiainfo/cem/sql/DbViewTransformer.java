@@ -2,11 +2,11 @@ package com.asiainfo.cem.sql;
 
 public interface DbViewTransformer {
     void check();
-    void dryRun();
+
+    DbConnectionConfiguration prepareCon();
 
     DbSchema sourceView();
     DbSchema targetView();
 
     String prepareSql();
-
 }
