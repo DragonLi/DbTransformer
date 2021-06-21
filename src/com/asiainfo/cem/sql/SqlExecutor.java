@@ -12,7 +12,7 @@ public class SqlExecutor {
     public void runSql(DbExecEnv env,DbViewTransformer transformer){
         //TODO
         env.initialize();
-        DbConnection con = env.prepareConnection(transformer.prepareCon());
+        DbConnection con = env.prepareConnection(transformer.sourceView().dbConfigName);
         con.initialize();
         con.execSql(transformer.prepareSql());
     }

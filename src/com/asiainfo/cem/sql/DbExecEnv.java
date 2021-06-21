@@ -5,7 +5,7 @@ public class DbExecEnv {
         //TODO
     }
 
-    public DbConnection prepareConnection(DbConnectionConfiguration cfg){
+    public DbConnection prepareConnection(String cfg){
         //TODO
         return null;
     }

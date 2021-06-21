@@ -37,7 +37,7 @@
       <point x="0.0" y="122.0" />
     </edge>
   </edges>
-  <settings layout="Hierarchic Group" zoom="0.7363045496750232" x="932.5" y="528.5" />
+  <settings layout="Hierarchic Group" zoom="0.7342592592592593" x="932.5" y="530.0" />
   <SelectedNodes>
     <node>com.asiainfo.cem.sql.DbViewTransformerCompositor</node>
   </SelectedNodes>

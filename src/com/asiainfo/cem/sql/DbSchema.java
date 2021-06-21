@@ -1,16 +1,18 @@
 package com.asiainfo.cem.sql;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DbSchema {
-    public final boolean IsPersistent;
-    public final List<String> FieldNames;
+    public final boolean isPersistent;
+    public final List<java.lang.String> FieldNames;
+    //TODO Schema的名字不能重复
     public final String name;
+    public final String dbConfigName;
 
-    public DbSchema() {
-        FieldNames = new ArrayList<>();
-        IsPersistent = false;
-        name = null;
+    public DbSchema(boolean isPersistent, List<java.lang.String> fieldNames, String name, String dbConfigName) {
+        this.isPersistent = isPersistent;
+        FieldNames = fieldNames;
+        this.name = name;
+        this.dbConfigName = dbConfigName;
     }
 }
