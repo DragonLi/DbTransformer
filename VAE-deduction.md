@@ -1,5 +1,37 @@
 # 番茄鱼的机器学习的学习笔记
 
+## 数据增强/提升框架
+[参考]
+(https://mp.weixin.qq.com/s?__biz=MzA5ODEzMjIyMA==&mid=2247653464&idx=1&sn=4cea82edf390d2b9b7feecba32733963&scene=58&subscene=0&exportkey=A%2FeVd4jwuypjJBkWq066NEs%3D&pass_ticket=xY8f5SA8zxXMB7wrWPl0IfIfkbG5f5ayTp8t4lf4funRXPdHy3mGaF2ZlfV76GQC&wx_header=0  "关注数据而不是模型：我是如何赢得吴恩达首届 Data-centric AI 竞赛的")
+
+[英文连接][how-i-won-andrew-ngs-very-first-data-centric-ai-competition]
+
+得奖的方法如下：
+
+1. 通过训练数据得到生成模型，并生成一定数量的候选增强数据
+2. 划分训练和验证数据集合，训练预测模型并预测验证数据的标签
+3. 使用另外一个模型对图像数据（训练数据和增强数据）进行嵌入，得到类似词向量的模型 
+4. 对每个预测错误的验证数据，利用图形嵌入向量使用余弦相似度从增强数据中查找临近点对应的增强数据，并加入到训练集合中
+5. 重新训练预测模型，并预测验证集的标签
+6. 重复4-6步，知道增强数据的数量达到上限
+
+以上过程可以抽象为：
+
+1. 针对数据特征确定生成-编码-聚类模型，例如VAE聚类模型
+2. 使用全部数据训练生成-编码-聚类模型
+3. 划分训练和验证数据集合，保证每个类别都有训练数据和验证数据
+4. 训练预测模型，预测验证集标签
+5. 对每个预测错误的数据，根据类别使用生成模型生成增强数据若干个，并加入到训练数据集合
+6. 重复4-5步骤，知道满足终止条件（例如增强数据的数量达到上限，或则运行次数已经达到上限）
+
+得奖方法把生成-编码-聚类模型拆分为生成模型和对象嵌入模型，并使用Annoy算法包执行临近搜索。然而如果要更通用，通过VAE-GAN-Clustering算法模型可能更好，需要进一步探索。
+
+[模型参考](https://kexue.fm/archives/5887 "变分自编码器（四）：一步到位的聚类方案")
+
+
+[how-i-won-andrew-ngs-very-first-data-centric-ai-competition]: https://towardsdatascience.com/how-i-won-andrew-ngs-very-first-data-centric-ai-competition-e02001268bda  "how-i-won-andrew-ngs-very-first-data-centric-ai-competition"
+
+
 ## 基于最优化方法的机器学习套路
 
 ### 背景：算法分类和最优化
