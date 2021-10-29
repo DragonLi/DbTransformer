@@ -25,6 +25,17 @@ $$
 &= min \sum_{y} \iint p(x)p(y/z)p(z/x)log\frac{p(x)p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)}dzdx
 \end{split}
 $$
+与标准VAE一样，假设$p(z/x)$服从各分量独立的正态分布。然而$q(z/y)$依赖y因此服从标准正态分布$N(\mu_y,I)$，$q(y)$根据数据特征选择简单的离散概率分布（按照最大熵原理，没有其他信息的情况下可以选择均匀分布），$p(y/z)$是分类器，可以选择softmax，也可以增加其他网络加强分类器的能力。
+如下所示：
+$$
+\begin{split}
+x \sim p(x) 
+\xrightarrow{Encoder} & z \sim p(z/x) \quad z \sim & q(z/y)
+\xrightarrow{Decoder} x \sim q(x/z) \\\\
+ & \downarrow & \uparrow \\\\
+& p(y/z) & q(y)
+\end{split}
+$$
 
 ## 基于最优化方法的机器学习套路
 

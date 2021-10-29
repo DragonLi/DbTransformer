@@ -11,7 +11,7 @@ x \sim p(x)
 \xrightarrow{Encoder} z \sim p(z/x) \quad z \sim q(z)
 \xrightarrow{Decoder} x \sim q(x/z)
 $$
-
+并且假设$p(z/x)$服从各分量独立的正态分布，$q(z)$服从标准正态分布$N(0,I)$。
 
 推导目标是生成模型的概率$q(x,z)$尽可能逼近真实概率$p(x,z)$
 
