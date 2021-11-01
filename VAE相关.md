@@ -111,3 +111,102 @@ min \\{ E_{z \sim p(z/x)} [-ln(q(x/z))] \\} & \approx min \\{ \frac{1}{k} \sum_{
 $$
 
 两个正态分布的KL散度和交叉熵在[数学知识](./数学知识.md)中推导具体表达式。
+
+
+### VAE聚类模型
+VAE可以增加聚类的功能，如果提前知道有多少个类别，并且假设聚类只根据隐藏层来计算而跟输入无关，生成器（解码器）的输出也跟分类无关而只与隐藏层相关。也就是说聚类是一个独立正交的功能模块输入是$z$（或者等价于这种效果）。
+
+假设分类用整数变量$y$表示，则隐藏层变量从$z$改为$(z,y)$，则优化目标函数为：
+
+$$
+\begin{split}
+& min KL[p(x,z,y)//q(x,z,y)]  \\\\
+& = min \sum_{y} \iint p(x,z,y) log\frac{p(x,z,y)}{q(x,z,y)}dzdx \\\\
+&= min \sum_{y} \iint p(x)p(z,y/x)log\frac{p(x)p(z,y/x)}{q(x/z,y)q(z,y)}dzdx
+\end{split}
+$$
+
+假设隐藏层的分类$y$只跟$z$有关而跟$x$无关（是设计目标之一），因此假设$p(y/z,x)=p(y/z)$。同理生成器的结果$x$只与$z$有关而跟$y$无关，因此假设$q(x/z,y)=q(x/z)$。
+
+根据以上假设有：$p(z,y/x)=p(y/z,x)p(z/x)=p(y/z)p(z/x)$，$q(z,y)=q(z/y)q(y)$。优化目标简化为：
+$$
+\begin{split}
+& min \sum_{y} \iint p(x)p(z,y/x)log\frac{p(x)p(z,y/x)}{q(x/z,y)q(z,y)}dzdx  \\\\
+&= min \sum_{y} \iint p(x)p(y/z)p(z/x)log\frac{p(x)p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)}dzdx
+\end{split}
+$$
+与标准VAE一样，假设$p(z/x)$服从各分量独立的正态分布。然而$q(z/y)$依赖y因此服从标准正态分布$N(\mu_y,I)$，$q(y)$根据数据特征选择简单的离散概率分布（按照最大熵原理，没有其他信息的情况下可以选择均匀分布），$p(y/z)$是分类器，可以选择softmax，也可以增加其他网络加强分类器的能力。
+如下所示：
+$$
+\begin{split}
+x \sim p(x) 
+\xrightarrow{Encoder} & z \sim p(z/x) \quad z \sim & q(z/y)
+\xrightarrow{Decoder} x \sim q(x/z) \\\\
+ & \downarrow & \uparrow \\\\
+& p(y/z) & q(y)
+\end{split}
+$$
+优化目标继续简化为：
+$$
+\begin{split}
+& min \sum_{y} \iint p(x)p(y/z)p(z/x)log\frac{p(x)p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)}dzdx  \\\\
+&= min \sum_{y} \iint p(x)p(y/z)p(z/x) (log[p(x)] + log\frac{p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)} ) dzdx  \\\\
+&= min ( \sum_{y} \iint p(x)p(y/z)p(z/x) log[p(x)] dzdx + \sum_{y} \iint p(x)p(y/z)p(z/x) log\frac{p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)} dzdx ) \\\\
+&= min ( \int p(x)log[p(x)] (\int [\sum_{y} p(y/z)]p(z/x) dz )dx + \sum_{y} \iint p(x)p(y/z)p(z/x) log\frac{p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)} dzdx ) \\\\
+&= min ( \int p(x)log[p(x)]dx + \int p(x) \int \sum_{y} p(y/z)p(z/x) log\frac{p(y/z)p(z/x)}{q(x/z)q(z/y)q(y)} dzdx ) \\\\
+& \int p(x)log[p(x)]dx是p(x)的信息熵，不包含任何参数，是一个常量，可以去掉 \\\\
+&= min \int p(x) ( \int \sum_{y} p(y/z)p(z/x) log\frac{p(z/x)}{q(z/y)} dz + \int \sum_{y} p(y/z)p(z/x) log\frac{p(y/z)}{q(y)} dz - \int \sum_{y} p(y/z)p(z/x) log[q(x/z)] dz) dx \\\\
+&= min \int p(x) ( \int \sum_{y} p(y/z)p(z/x) log\frac{p(z/x)}{q(z/y)} dz + \int \sum_{y} p(y/z)p(z/x) log\frac{p(y/z)}{q(y)} dz - \int p(z/x) log[q(x/z)] dz) dx \\\\
+&= min E_{x \sim p(x),z \sim p(z/x)} (\sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)} + \sum_{y} p(y/z) log\frac{p(y/z)}{q(y)} - log[q(x/z)]) \\\\
+&= min E_{x \sim p(x),z \sim p(z/x)} (\sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)} + KL[p(y/z) // q(y)] - log[q(x/z)])
+\end{split}
+$$
+
+假设$q(z/y)$服从标准正态分布$N(\mu_y,I)$:
+
+$$
+q(z_{i}/y) = \frac{1}{\sqrt{2 \pi }}e^{-\frac{1}{2}(z_{i}-\mu_y)^2} , i\in 1 .. d
+$$
+
+$p(z/x)$服从各分量独立的正态分布$N(\mu_x,\sigma_x)$
+
+$$
+p(z_{i}/x)=\frac{1}{\sqrt{2 \pi \sigma_{i}^2(x) }}e^{-\frac{1}{2}(\frac{z_{i}-\mu_{i}(x)}{\sigma_{i}(x)})^2}  , i\in 1 .. d
+$$
+因此
+$$
+\begin{split}
+& log\frac{p(z/x)}{q(z/y)} \\\\
+= & log\Pi_{z_i} \frac{p(z_i/x)}{q(z_i/y)} \\\\
+= & \sum_{z_i} log \frac{p(z_i/x)}{q(z_i/y)} \\\\
+= & \sum_{z_i}[ -log\sigma_i(x) + \frac{1}{2}(z_{i}-\mu_y)^2 -\frac{1}{2}(\frac{z_{i}-\mu_{i}(x)}{\sigma_{i}(x)})^2 ] \\\\
+& 由于z_i \sim p(z_i/x)是通过重参数z = \epsilon \circ \sigma(x) + \mu(x)计算得到 \\\\
+= & \sum_{i=1}^{d}[\frac{1}{2}(z_{i}-\mu_y)^2 -log[\sigma_i(x)] -\frac{1}{2}\epsilon^2 ]
+\end{split}
+$$
+
+
+根据上式，损失函数的第一项简化如下(k是分类数目):
+$$
+\begin{split}
+& min\sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)} \\\\
+= & min\sum_{i=1}^{k} p(y_i/z) \sum_{j=1}^{d}[\frac{1}{2}(z_{j}-\mu_y)^2 -log[\sigma_j(x)] ] \\\\
+ & 定义Y=(p(y_1/z), \cdots , p(y_k/z))=p(y/z) \\\\
+ & N=\frac{1}{2}(z-\mu_y)^{T}(z-\mu_y)-log[\sigma(x)]  \\\\
+ & =(\frac{1}{2}(z_{1}-\mu_y)^2 -log[\sigma_1(x)] , \cdots , \frac{1}{2}(z_{d}-\mu_y)^2 -log[\sigma_d(x)]) \\\\
+= & min Y  N
+\end{split}
+$$
+
+最终损失函数定义为：
+$$
+\begin{split}
+& min E_{x \sim p(x),z \sim p(z/x)} (\sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)} + KL[p(y/z) // q(y)] - log[q(x/z)]) \\\\
+= & min E_{x \sim p(x),z \sim p(z/x)}(Y  N + KL[p(y/z) // q(y)] - log[q(x/z)])
+\end{split}
+$$
+
+对比标准VAE的损失函数
+* 除了$q(z)$变为$q(z/y)$外，原来的$E_{x \sim p(x)}KL[p(z/x)//q(z)]$变成采样$E_{x \sim p(x),z \sim p(z/x)} \sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)}$，这个变化除了需要$p(z/x)$尽量接近$q(z/y)$外，还要求对每个分类有专属的分布。
+* 而多出来的第二项$E_{x \sim p(x),z \sim p(z/x)} KL[p(y/z) // q(y)]$表示每个分类应该尽量均匀分布而不要重叠坍塌
+* 最后一项$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$是重构误差，跟标准VAE一致
