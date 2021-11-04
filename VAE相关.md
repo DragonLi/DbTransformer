@@ -89,7 +89,7 @@ $$
 ln[q(x_{j}/z)]=-\frac{1}{2}[ln(2\pi)+ ln(\sigma_{j}^2(z)) + \frac{(x_{j}-\mu_{j}(z))^2}{\sigma_{j}^2(z)} ]
 $$
 
-为了方便控制，$\sigma_{j}^2(z)$固定为常量$\sigma^2_g$
+为了方便控制，$\sigma_{j}^2(z)$固定为常量$\sigma^2_g$，意味着解码器只要输出$\mu_{q(x/z)}(z)$，而不需要输出方差:
 
 $$
 \begin{split}
@@ -109,6 +109,18 @@ min \\{ E_{z \sim p(z/x)} [-ln(q(x/z))] \\} & \approx min \\{ \frac{1}{k} \sum_{
 &z \sim p(z/x)
 \end{split}
 $$
+
+将以上两项合并起来得到最终的损失函数为：
+$$
+\begin{split}
+ \frac 1 2 \sum_{i=1}^d  [[\sigma_p^2(x)]_i - ln([\sigma_p^2(x)]_i) + [\mu_p(x)]^2_i - 1 ] + \frac{1}{\sigma^2_g}  \big{\lVert} x-\mu(z) \big{\rVert}^2
+\end{split}
+$$
+
++ 实现时使用$log[\sigma^2(x)]$而不是$log[\sigma(x)]$或者$\sigma(x)$作为网络拟合的结果，因为这时的值域是全体实数，可以避免使用RELU之类求导不够友好的激活函数。
++ $ln([\sigma_p^2(x)]$和$\mu_p(x)$分别是编码器拟合的方差和均值。
++ $\mu(z)$是网络预测（解码器/生成器）的结果，，方差作为超参数不需要预测，并且定义$reg=\frac{1}{\sigma^2_g}>0$。
+
 
 两个正态分布的KL散度和交叉熵在[数学知识](./数学知识.md)中推导具体表达式。
 
@@ -165,7 +177,7 @@ $$
 假设$q(z/y)$服从标准正态分布$N(\mu_y,I)$:
 
 $$
-q(z_{i}/y) = \frac{1}{\sqrt{2 \pi }}e^{-\frac{1}{2}(z_{i}-\mu_y)^2} , i\in 1 .. d
+q(z_{i}/y) = \frac{1}{\sqrt{2 \pi }}e^{-\frac{1}{2}(z_{i}-\mu_{y,i})^2} , i\in 1 .. d
 $$
 
 $p(z/x)$服从各分量独立的正态分布$N(\mu_x,\sigma_x)$
@@ -179,9 +191,9 @@ $$
 & log\frac{p(z/x)}{q(z/y)} \\\\
 = & log\Pi_{z_i} \frac{p(z_i/x)}{q(z_i/y)} \\\\
 = & \sum_{z_i} log \frac{p(z_i/x)}{q(z_i/y)} \\\\
-= & \sum_{z_i}[ -log\sigma_i(x) + \frac{1}{2}(z_{i}-\mu_y)^2 -\frac{1}{2}(\frac{z_{i}-\mu_{i}(x)}{\sigma_{i}(x)})^2 ] \\\\
+= & \sum_{z_i}[ -log\sigma_i(x) + \frac{1}{2}(z_{i}-\mu_{y,i})^2 -\frac{1}{2}(\frac{z_{i}-\mu_{i}(x)}{\sigma_{i}(x)})^2 ] \\\\
 & 由于z_i \sim p(z_i/x)是通过重参数z = \epsilon \circ \sigma(x) + \mu(x)计算得到 \\\\
-= & \sum_{i=1}^{d}[\frac{1}{2}(z_{i}-\mu_y)^2 -log[\sigma_i(x)] -\frac{1}{2}\epsilon^2 ]
+= & \sum_{i=1}^{d}[\frac{1}{2}(z_{i}-\mu_{y,i})^2 -log[\sigma_i(x)] -\frac{1}{2}\epsilon^2 ]
 \end{split}
 $$
 
@@ -190,15 +202,15 @@ $$
 $$
 \begin{split}
 & min\sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)} \\\\
-= & min\sum_{i=1}^{k} p(y_i/z) \sum_{j=1}^{d}[\frac{1}{2}(z_{j}-\mu_y)^2 -log[\sigma_j(x)] ] \\\\
+= & min\sum_{i=1}^{k} p(y_i/z) \sum_{j=1}^{d}[\frac{1}{2}(z_{j}-\mu_{y,i})^2 -log[\sigma_j(x)] ] \\\\
  & 定义Y=(p(y_1/z), \cdots , p(y_k/z))=p(y/z) \\\\
  & N=\frac{1}{2}(z-\mu_y)^{T}(z-\mu_y)-log[\sigma(x)]  \\\\
- & =(\frac{1}{2}(z_{1}-\mu_y)^2 -log[\sigma_1(x)] , \cdots , \frac{1}{2}(z_{d}-\mu_y)^2 -log[\sigma_d(x)]) \\\\
+ & =(\frac{1}{2}(z_{1}-\mu_{y,1})^2 -log[\sigma_1(x)] , \cdots , \frac{1}{2}(z_{d}-\mu_{y,d})^2 -log[\sigma_d(x)]) \\\\
 = & min Y  N
 \end{split}
 $$
 
-最终损失函数定义为：
+目标函数等价于:
 $$
 \begin{split}
 & min E_{x \sim p(x),z \sim p(z/x)} (\sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)} + KL[p(y/z) // q(y)] - log[q(x/z)]) \\\\
@@ -210,3 +222,44 @@ $$
 * 除了$q(z)$变为$q(z/y)$外，原来的$E_{x \sim p(x)}KL[p(z/x)//q(z)]$变成采样$E_{x \sim p(x),z \sim p(z/x)} \sum_{y} p(y/z) log\frac{p(z/x)}{q(z/y)}$，这个变化除了需要$p(z/x)$尽量接近$q(z/y)$外，还要求对每个分类有专属的分布。
 * 而多出来的第二项$E_{x \sim p(x),z \sim p(z/x)} KL[p(y/z) // q(y)]$表示每个分类应该尽量均匀分布而不要重叠坍塌
 * 最后一项$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$是重构误差，跟标准VAE一致
+
+当$q(y)$是均匀分布时，第二项化简如下:
+
+$$
+\begin{split}
+  & min E_{x \sim p(x),z \sim p(z/x)} KL[p(y/z) // q(y)] \\\\
+= & min E_{x \sim p(x),z \sim p(z/x)} \sum_y p(y/z) log \frac{p(y/z)}{q(y)} \\\\
+= & min E_{x \sim p(x),z \sim p(z/x)} [\sum_y p(y/z) log[p(y/z)] -\sum_y p(y/z) log [q(y)] \\\\
+= & min E_{x \sim p(x),z \sim p(z/x)} [\sum_y p(y/z) log[p(y/z)] -log [q(y)] ] \\\\
+= & min E_{x \sim p(x),z \sim p(z/x)} \sum_y p(y/z) log[p(y/z)] 
+\end{split}
+$$
+
+跟标准VAE一样，$q(x/z)$也是假设服从各分量独立的正态分布
+$$
+q(x_{j}/z)=\frac{1}{\sqrt{2 \pi \sigma_{j}^2(z) }}e^{-\frac{1}{2}(\frac{x_{j}-\mu_{j}(z)}{\sigma_{j}(z)})^2}  , j\in 1 .. D
+$$
+为了方便控制，$\sigma_{j}^2(z)$固定为常量$\sigma^2_g$
+
+$$
+\begin{split}
+min \\{ E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]] \\} & \approx min \\{ \frac{1}{k} \sum_{j=1}^{k}log[q(x/z_j)] \\} \\\\
+&= min \\{ \frac{1}{k\sigma^2_g} \sum_{j=1}^{k} \big{\lVert} x-\mu(z_j) \big{\rVert}^2 \\} \\\\
+& 采样一次，因为在微批中训练可累加采样次数 \\\\
+&= min \\{ \frac{1}{\sigma^2_g}  \big{\lVert} x-\mu(z) \big{\rVert}^2 \\} \\\\
+&z \sim p(z/x)
+\end{split}
+$$
+
+将以上三项合并起来得到最终的损失函数为：
+$$
+\begin{split}
+& p(y/z) N + \sum_y p(y/z) log[p(y/z)] + \frac{1}{\sigma^2_g}  \big{\lVert} x-\mu(z) \big{\rVert}^2 \\\\
+ 其中: & N=\frac{1}{2}[(z-\mu_y)^{T}(z-\mu_y)-log[\sigma^2(x)]]
+\end{split}
+$$
+
++ 实现时$p(y/z)$是分类器预测的向量，$log[p(y/z)]$需要加上一个最小的正常量$keras.epsilon()$避免刚好碰上零值取对数。
++ 使用$log[\sigma^2(x)]$而不是$log[\sigma(x)]$或者$\sigma(x)$作为网络拟合的结果，因为这时的值域是全体实数，可以避免使用RELU之类求导不够友好的激活函数。
++ $\mu(z)$是网络预测（解码器/生成器）的结果，方差作为超参数不需要预测，并且定义$reg=\frac{1}{\sigma^2_g}>0$。
++ 因为$y$有指定的分类数目，因此$\mu_y$定义为一个$k \times d$的矩阵，k是分类数目，d是隐变量的维数。
