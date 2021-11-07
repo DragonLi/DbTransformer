@@ -110,6 +110,19 @@ min \\{ E_{z \sim p(z/x)} [-ln(q(x/z))] \\} & \approx min \\{ \frac{1}{k} \sum_{
 \end{split}
 $$
 
+然而第二项$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$却刚好是$x,z$两个随机变量的互信息：
+$$
+\begin{split}
+ & min E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]] \\\\
+&= max \iint_{x,z} p(x)p(z/x) log[q(x/z)] \\\\
+&= max \iint_{x,z} p(x,z) (log[q(x/z)]-log[p(x)]) \\\\
+& 假设拟合能力无限：p(x)p(z/x)=p(x,z)=q(x,z)=q(x/z)p(z) \\\\
+&= max \iint_{x,z} q(x,z) log \frac{q(x/z)}{p(x)} \\\\
+&= max \iint_{x,z} q(x,z) log \frac{q(x/z)p(z)}{p(x)p(z)} \\\\
+&= max \iint_{x,z} q(x,z) log \frac{q(x,z)}{p(x)p(z)}
+\end{split}
+$$
+
 将以上两项合并起来得到最终的损失函数为：
 $$
 \begin{split}
@@ -118,7 +131,7 @@ $$
 $$
 有趣的是，损失函数刚好分为编码器的损失和解码器的损失两部分
 * 第一项从KL散度$KL[p(z/x)//q(z)]$推导而来，并且只跟编码器的参数有关系
-* 第二项从$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$而来，并且只跟解码器相关。
+* 第二项从$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$而来，并且跟解码器（主要）和编码器（通过重参数关联）相关。
 
 实现时
 + 使用$log[\sigma^2(x)]$而不是$log[\sigma(x)]$或者$\sigma(x)$作为网络拟合的结果，因为这时的值域是全体实数，可以避免使用RELU之类求导不够友好的激活函数。
