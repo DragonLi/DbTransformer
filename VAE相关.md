@@ -110,16 +110,25 @@ min \\{ E_{z \sim p(z/x)} [-ln(q(x/z))] \\} & \approx min \\{ \frac{1}{k} \sum_{
 \end{split}
 $$
 
-然而第二项$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$却刚好是$x,z$两个随机变量的互信息：
+然而当假设拟合能力无穷大$p(x,z) \approx q(x,z)$时$E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]]$却刚好是$p(x),p(z)$两个随机变量的互信息，这是因为
+$$
+\begin{split}
+ & p(z)=\int p(x,z)dz \approx \int q(x,z)dz = q(z) \\\\
+ & p(x/z)p(z)=p(x,z) \approx q(x,z)=q(x/z)q(z) \approx q(x/z)p(z)
+\end{split}
+$$
+于是
 $$
 \begin{split}
  & min E_{x \sim p(x),z \sim p(z/x)}[- log[q(x/z)]] \\\\
 &= max \iint_{x,z} p(x)p(z/x) log[q(x/z)] \\\\
 &= max \iint_{x,z} p(x,z) (log[q(x/z)]-log[p(x)]) \\\\
-& 假设拟合能力无限：p(x)p(z/x)=p(x,z)=q(x,z)=q(x/z)p(z) \\\\
-&= max \iint_{x,z} q(x,z) log \frac{q(x/z)}{p(x)} \\\\
-&= max \iint_{x,z} q(x,z) log \frac{q(x/z)p(z)}{p(x)p(z)} \\\\
-&= max \iint_{x,z} q(x,z) log \frac{q(x,z)}{p(x)p(z)}
+&= max \iint_{x,z} p(x,z) log \frac{q(x/z)}{p(x)} \\\\
+&= max \iint_{x,z} p(x,z) log \frac{q(x/z)p(z)}{p(x)p(z)} \\\\
+& p(x/z)p(z) \approx q(x/z)p(z) \\\\
+&\approx max \iint_{x,z} p(x,z) log \frac{p(x/z)p(z)}{p(x)p(z)} \\\\
+&= max \iint_{x,z} p(x,z) log \frac{p(x,z)}{p(x)p(z)} \\\\
+&= max I[p(x);p(z)]
 \end{split}
 $$
 
